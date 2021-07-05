@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
      <loc>https://faradaysec.com/</loc>
-     <lastmod>2021-06-30</lastmod>
+     <lastmod>2021-07-05</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://faradaysec.com/getting-started/</loc>
-     <lastmod>2021-06-30</lastmod>
+     <lastmod>2021-07-05</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://faradaysec.com/technical/arch/</loc>
-     <lastmod>2021-06-30</lastmod>
+     <lastmod>2021-07-05</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://faradaysec.com/technical/agents/</loc>
-     <lastmod>2021-06-30</lastmod>
+     <lastmod>2021-07-05</lastmod>
      <changefreq>daily</changefreq>
     </url><url>
      <loc>https://faradaysec.com/misc/docker/</loc>
-     <lastmod>2021-06-30</lastmod>
+     <lastmod>2021-07-05</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>
