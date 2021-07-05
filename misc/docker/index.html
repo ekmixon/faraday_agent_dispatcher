@@ -472,15 +472,13 @@
 <p>After that you only need a .ini file to pass to the image. We already have some
  <a href="#templates">templates</a> to use. For these you have to edit it in
  the first lines:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[server]</span>
-<span class="c1">; TODO be replaced with network configuration</span>
-<span class="na">host</span> <span class="o">=</span> <span class="s">localhost</span>
-<span class="na">ssl</span> <span class="o">=</span> <span class="s">False</span>
-<span class="na">api_port</span> <span class="o">=</span> <span class="s">5985</span>
-<span class="na">websocket_port</span> <span class="o">=</span> <span class="s">9000</span>
-<span class="na">ssl_cert</span> <span class="o">=</span>
-<span class="c1">; TODO be filled with available workspaces</span>
-<span class="na">workspaces</span> <span class="o">=</span>
+<div class="highlight"><pre><span></span><code><span class="nt">server</span><span class="p">:</span>
+  <span class="nt">api_port</span><span class="p">:</span> <span class="s">&#39;5985&#39;</span> <span class="c1"># TODO be replaced with network configuration</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">localhost</span>
+  <span class="nt">ssl</span><span class="p">:</span> <span class="s">&#39;False&#39;</span>
+  <span class="nt">ssl_cert</span><span class="p">:</span> <span class="s">&#39;&#39;</span>
+  <span class="nt">websocket_port</span><span class="p">:</span> <span class="s">&#39;9000&#39;</span>
+  <span class="nt">workspaces</span><span class="p">:</span> <span class="p p-Indicator">[]</span> <span class="c1"># TODO be filled with available workspaces</span>
 </code></pre></div>
 <p>After setting the values in the .yaml file, you can run the agent as:</p>
 <div class="highlight"><pre><span></span><code>$ docker run -v <span class="o">{</span>ABSOLUTE_PATH_TO_YAML<span class="o">}</span>:/root/.faraday/config/dispatcher.yaml faradaysec/faraday_agent_dispatcher --token<span class="o">={</span>TOKEN<span class="o">}</span>
