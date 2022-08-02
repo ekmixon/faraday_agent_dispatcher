@@ -50,7 +50,7 @@ def main():
 
     if connection_type == "socket":
         # Default Socket according to official docs
-        socket = "/var/run/gvmd.sock" if not socket else socket
+        socket = socket or "/var/run/gvmd.sock"
     elif connection_type == "ssh":
         if not userssh or not passwssh:
             print("SSH username or password not provided", file=sys.stderr)
@@ -102,7 +102,7 @@ def main():
             _response = _gmp.get_task(_task_id)
             status = _response[1].find("status").text
 
-            return True if status == "Done" else False
+            return status == "Done"
 
     scan_done = False
 

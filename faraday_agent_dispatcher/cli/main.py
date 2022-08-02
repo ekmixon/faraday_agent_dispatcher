@@ -111,8 +111,7 @@ def setting_logger(debug, log_level, logdir):
     else:
         logging_level = logging.get_level(log_level)
     logging.set_logging_level(logging_level)
-    logger = logging.get_logger()
-    return logger
+    return logging.get_logger()
 
 
 @click.command(help="faraday-dispatcher config_wizard")

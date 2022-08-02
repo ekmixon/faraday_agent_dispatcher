@@ -51,8 +51,10 @@ if __name__ == "__main__":
         data = dict(hosts=[host_data_])
         if out == "json":
             prefix = "\n" if spaced_before else ""
-            suffix = "\n" if spaced_middle else ""
-            suffix += ("\n" if spare else "").join([""] + [json.dumps(data) for _ in range(int(count) - 1)])
+            suffix = ("\n" if spaced_middle else "") + (
+                "\n" if spare else ""
+            ).join([""] + [json.dumps(data) for _ in range(int(count) - 1)])
+
             print(f"{prefix}{json.dumps(data)}{suffix}")
         elif out == "str":
             print("NO JSON OUTPUT")

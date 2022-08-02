@@ -75,7 +75,7 @@ executors_path = Path(__file__).parent.parent.parent / "faraday_agent_dispatcher
 def sort_dict_multilevel(value):
     if isinstance(value, dict):
         value = dict(sorted(value.items()))
-        for k in value.keys():
+        for k in value:
             value[k] = sort_dict_multilevel(value[k])
     if isinstance(value, list):
         if len(value) > 0 and not isinstance(value[0], (list, dict)):
@@ -99,4 +99,4 @@ def test_executors(executor_data):
     for response in responses_list:
         assert "hosts" in response, response
     responses_list = [sort_dict_multilevel(response["hosts"]) for response in responses_list]
-    assert len(responses_list) > 0
+    assert responses_list

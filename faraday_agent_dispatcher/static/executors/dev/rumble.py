@@ -41,6 +41,14 @@ def convert_rumble_assets(assets: list):
     """
 
     hosts = []
+    data_keys = [
+        "protocol",
+        "service.product",
+        "service.family",
+        "service.vendor",
+        "service.version",
+        "banner",
+    ]
     for asset in assets:
         host = dict(
             ip=asset["addresses"][0],
@@ -58,20 +66,11 @@ def convert_rumble_assets(assets: list):
         for service in asset["services"].keys():
 
             ip_address, port, ip_protocol = service.split("/")
-            service_name_parts = []
-            data_keys = [
-                "protocol",
-                "service.product",
-                "service.family",
-                "service.vendor",
-                "service.version",
-                "banner",
-            ]
             service_data = asset["services"][service]
 
-            for dk in data_keys:
-                if dk in service_data:
-                    service_name_parts.append(service_data[dk])
+            service_name_parts = [
+                service_data[dk] for dk in data_keys if dk in service_data
+            ]
 
             service_name = " ".join(service_name_parts).strip()
 
@@ -91,9 +90,7 @@ def convert_rumble_assets(assets: list):
 
         hosts.append(host)
 
-    faraday_assets = dict(hosts=hosts)
-
-    return faraday_assets
+    return dict(hosts=hosts)
 
 
 async def main():
@@ -115,8 +112,7 @@ async def main():
     assets = []
     try:
         with open(os.path.join(scan_output, "assets.jsonl"), "r") as f:
-            for line in f.readlines():
-                assets.append(json.loads(line))
+            assets.extend(json.loads(line) for line in f)
     except FileNotFoundError:
         print("Could not find assets.jsonl scan output!", file=sys.stderr)
         sys.exit()

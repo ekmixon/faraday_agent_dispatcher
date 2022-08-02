@@ -19,7 +19,7 @@ def get_report_name():
 
 def nessus_login(url, user, password):
     payload = {"username": user, "password": password}
-    response = requests.post(url + "/session", payload, verify=False)
+    response = requests.post(f"{url}/session", payload, verify=False)
 
     if response.status_code == 200:
         if response.headers["content-type"].lower() == "application/json" and "token" in response.json():
@@ -32,9 +32,15 @@ def nessus_login(url, user, password):
 
 
 def nessus_templates(url, token, x_token="", target=""):
-    headers = {"X-Cookie": "token={}".format(token), "X-API-Token": x_token}
+    headers = {"X-Cookie": f"token={token}", "X-API-Token": x_token}
     payload = {}
-    response = requests.get(url + "/editor/scan/templates", json=payload, headers=headers, verify=False)
+    response = requests.get(
+        f"{url}/editor/scan/templates",
+        json=payload,
+        headers=headers,
+        verify=False,
+    )
+
 
     if (
         response.status_code == 200
@@ -51,7 +57,7 @@ def nessus_templates(url, token, x_token="", target=""):
 
 
 def nessus_add_target(url, token, x_token="", target="", template="basic", name="nessus_scan"):
-    headers = {"X-Cookie": "token={}".format(token), "X-API-Token": x_token}
+    headers = {"X-Cookie": f"token={token}", "X-API-Token": x_token}
     templates = nessus_templates(url, token, x_token)
     if not templates:
         print("Templates not available", file=sys.stderr)
@@ -61,16 +67,20 @@ def nessus_add_target(url, token, x_token="", target="", template="basic", name=
         template = "basic"
 
     payload = {
-        "uuid": "{}".format(templates[template]),
+        "uuid": f"{templates[template]}",
         "settings": {
-            "name": "{}".format(name),
+            "name": f"{name}",
             "enabled": True,
             "text_targets": target,
             "agent_group_id": [],
         },
     }
 
-    response = requests.post(url + "/scans", json=payload, headers=headers, verify=False)
+
+    response = requests.post(
+        f"{url}/scans", json=payload, headers=headers, verify=False
+    )
+
     if (
         response.status_code == 200
         and response.headers["content-type"].lower() == "application" "/json"
@@ -87,9 +97,12 @@ def nessus_add_target(url, token, x_token="", target="", template="basic", name=
 
 
 def nessus_scan_run(url, scan_id, token, x_token="", target="basic", policies=""):
-    headers = {"X-Cookie": "token={}".format(token), "X-API-Token": x_token}
+    headers = {"X-Cookie": f"token={token}", "X-API-Token": x_token}
 
-    response = requests.post(url + f"/scans/{scan_id}/launch", headers=headers, verify=False)
+    response = requests.post(
+        f"{url}/scans/{scan_id}/launch", headers=headers, verify=False
+    )
+
     if response.status_code != 200:
         print(
             "Could not launch scan. Response from server was" f" {response.status_code}",
@@ -100,7 +113,10 @@ def nessus_scan_run(url, scan_id, token, x_token="", target="basic", policies=""
     status = "running"
     tries = 0
     while status == "running":
-        response = requests.get(url + f"/scans/{scan_id}", headers=headers, verify=False)
+        response = requests.get(
+            f"{url}/scans/{scan_id}", headers=headers, verify=False
+        )
+
         if response.status_code == 200:
             if (
                 response.headers["content-type"].lower() == "application/json"
@@ -129,14 +145,15 @@ def nessus_scan_run(url, scan_id, token, x_token="", target="basic", policies=""
 
 
 def nessus_scan_export(url, scan_id, token, x_token=""):
-    headers = {"X-Cookie": "token={}".format(token), "X-API-Token": x_token}
+    headers = {"X-Cookie": f"token={token}", "X-API-Token": x_token}
 
     response = requests.post(
-        url + f"/scans/{scan_id}/export?limit=2500",
+        f"{url}/scans/{scan_id}/export?limit=2500",
         data={"format": "nessus"},
         headers=headers,
         verify=False,
     )
+
     if (
         response.status_code == 200
         and response.headers["content-type"].lower() == "application" "/json"
@@ -150,7 +167,7 @@ def nessus_scan_export(url, scan_id, token, x_token=""):
     status = "processing"
     tries = 0
     while status != "ready":
-        response = requests.get(url + f"/tokens/{export_token}/status", verify=False)
+        response = requests.get(f"{url}/tokens/{export_token}/status", verify=False)
         if response.status_code == 200:
             if response.headers["content-type"].lower() == "application/json" and "status" in response.json():
                 status = response.json()["status"]
@@ -173,30 +190,31 @@ def nessus_scan_export(url, scan_id, token, x_token=""):
 
         time.sleep(TIME_BETWEEN_TRIES)
 
-    print("Report export status {}".format(status), file=sys.stderr)
-    response = requests.get(url + f"/tokens/{export_token}/download", allow_redirects=True, verify=False)
-    if response.status_code == 200:
-        return response.content
+    print(f"Report export status {status}", file=sys.stderr)
+    response = requests.get(
+        f"{url}/tokens/{export_token}/download",
+        allow_redirects=True,
+        verify=False,
+    )
 
-    return None
+    return response.content if response.status_code == 200 else None
 
 
 def get_x_api_token(url, token):
     x_token = None
 
-    headers = {"X-Cookie": "token={}".format(token)}
+    headers = {"X-Cookie": f"token={token}"}
 
-    pattern = (
-        r"\{key:\"getApiToken\",value:function\(\)\{"
-        r"return\"([a-zA-Z0-9]*-[a-zA-Z0-9]*-[a-zA-Z0-9]*-"
-        r"[a-zA-Z0-9]*-[a-zA-Z0-9]*)\"\}"
-    )
-    response = requests.get(url + "/nessus6.js", headers=headers, verify=False)
+    response = requests.get(f"{url}/nessus6.js", headers=headers, verify=False)
 
     if response.status_code == 200:
-        matched = re.search(pattern, str(response.content))
-        if matched:
-            x_token = matched.group(1)
+        pattern = (
+            r"\{key:\"getApiToken\",value:function\(\)\{"
+            r"return\"([a-zA-Z0-9]*-[a-zA-Z0-9]*-[a-zA-Z0-9]*-"
+            r"[a-zA-Z0-9]*-[a-zA-Z0-9]*)\"\}"
+        )
+        if matched := re.search(pattern, str(response.content)):
+            x_token = matched[1]
         else:
             print("X-api-token not found :(", file=sys.stderr)
     else:
@@ -225,9 +243,9 @@ def main():
 
     if not NESSUS_URL:
         NESSUS_URL = os.getenv("NESSUS_URL")
-        if not NESSUS_URL:
-            print("URL not provided", file=sys.stderr)
-            sys.exit(1)
+    if not NESSUS_URL:
+        print("URL not provided", file=sys.stderr)
+        sys.exit(1)
 
     scan_file = None
 

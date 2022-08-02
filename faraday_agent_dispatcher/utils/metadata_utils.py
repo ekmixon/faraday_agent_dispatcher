@@ -17,10 +17,7 @@ INFO_METADATA_KEYS = ["category", "name", "title", "website", "description", "im
 def executor_folder() -> Union[Path, str]:
 
     folder = Path(__file__).parent.parent / "static" / "executors"
-    if "WIZARD_DEV" in os.environ:
-        return folder / "dev"
-    else:
-        return folder / "official"
+    return folder / "dev" if "WIZARD_DEV" in os.environ else folder / "official"
 
 
 def executor_metadata(executor_name: str) -> dict:

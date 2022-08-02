@@ -135,7 +135,7 @@ def process_agent():
         print(f"{Bcolors.OKBLUE}Section: {section}{Bcolors.ENDC}")
         for opt in agent_dict[section]:
             if section not in config.instance:
-                config.instance[section] = dict()
+                config.instance[section] = {}
             if section == Sections.TOKENS and opt == "agent":
                 if "agent" in config.instance[section] and confirm_prompt("Delete agent token?", default=None):
                     config.instance[section].pop(opt)

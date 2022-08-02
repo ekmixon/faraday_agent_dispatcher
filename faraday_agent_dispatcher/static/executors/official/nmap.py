@@ -35,25 +35,25 @@ def command_create(target_list):
     #                f'{os.environ.get("EXECUTOR_CONFIG_HOST_TIMEOUT")}')
 
     port_list = my_envs.get("EXECUTOR_CONFIG_PORT_LIST")
-    cmd += "" if not port_list else ["-p", f"{port_list}"]
+    cmd += ["-p", f"{port_list}"] if port_list else ""
 
     top_ports = my_envs.get("EXECUTOR_CONFIG_TOP_PORTS")
-    cmd += "" if not top_ports else ["--top-ports", f"{top_ports}"]
+    cmd += ["--top-ports", f"{top_ports}"] if top_ports else ""
 
-    cmd += "" if not my_envs.get("EXECUTOR_CONFIG_OPTION_SC") else ["-sC"]
+    cmd += ["-sC"] if my_envs.get("EXECUTOR_CONFIG_OPTION_SC") else ""
 
-    cmd += "" if not my_envs.get("EXECUTOR_CONFIG_OPTION_SV") else ["-sV"]
+    cmd += ["-sV"] if my_envs.get("EXECUTOR_CONFIG_OPTION_SV") else ""
 
-    cmd += "" if not my_envs.get("EXECUTOR_CONFIG_OPTION_PN") else ["-Pn"]
+    cmd += ["-Pn"] if my_envs.get("EXECUTOR_CONFIG_OPTION_PN") else ""
 
     script_timeout = my_envs.get("EXECUTOR_CONFIG_SCRIPT_TIMEOUT")
-    cmd += "" if not script_timeout else ["--script-timeout", script_timeout]
+    cmd += ["--script-timeout", script_timeout] if script_timeout else ""
 
     host_timeout = my_envs.get("EXECUTOR_CONFIG_HOST_TIMEOUT")
-    cmd += "" if not host_timeout else ["--host-timeout", host_timeout]
+    cmd += ["--host-timeout", host_timeout] if host_timeout else ""
 
     script_cmd = my_envs.get("EXECUTOR_CONFIG_SCRIPT_CMD")
-    cmd += "" if not script_cmd else ["--script", f"{script_cmd}"]
+    cmd += ["--script", f"{script_cmd}"] if script_cmd else ""
 
     cmd += cmd_end
 

@@ -34,7 +34,7 @@ class Input:
 
 class VarEnvInput(Input):
     def __init__(self, name: str, value: str, adm_type: ADMType, error_name=None, new_name=None):
-        if adm_type == ADMType.ADD and value == "":
+        if adm_type == ADMType.ADD and not value:
             raise ValueError('IF ADMTYPE = ADD, VALUE CAN NOT BE ""')
         self.name = name
         self.value = value

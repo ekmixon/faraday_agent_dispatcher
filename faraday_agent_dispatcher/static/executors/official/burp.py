@@ -38,9 +38,7 @@ def get_issue_data(issue_type_id, json_issue_definitions):
         if "description" in info_list[0]:
             desc = info_list[0]["description"]
 
-    json_issue = {"issueBackground": desc, "remediationBackground": rem}
-
-    return json_issue
+    return {"issueBackground": desc, "remediationBackground": rem}
 
 
 def generate_xml(issues, name_result, json_issue_definitions):
@@ -65,27 +63,18 @@ def generate_xml(issues, name_result, json_issue_definitions):
         try:
             evidence = issue["issue"]["evidence"][0]
             request = evidence["request_response"]["request"][0]["data"]
-        except IndexError:
+        except (IndexError, KeyError):
             request = "No information"
-        except KeyError:
-            request = "No information"
-
         try:
             evidence = issue["issue"]["evidence"][0]
             response = evidence["request_response"]["response"][0]["data"]
-        except IndexError:
+        except (IndexError, KeyError):
             response = "No information"
-        except KeyError:
-            response = "No information"
-
         try:
             evidence = issue["issue"]["evidence"][0]["request_response"]
             response_redirected = evidence["was_redirect_followed"]
-        except IndexError:
+        except (IndexError, KeyError):
             response_redirected = "No information"
-        except KeyError:
-            response_redirected = "No information"
-
         ET.SubElement(xml_request_response, "request").text = request
         ET.SubElement(xml_request_response, "response").text = response
         ET.SubElement(xml_request_response, "responseRedirected").text = response_redirected
@@ -103,11 +92,7 @@ def main():
     TARGET_URL = os.getenv("EXECUTOR_CONFIG_TARGET_URL")
     NAMED_CONFIGURATION = os.getenv("EXECUTOR_CONFIG_NAMED_CONFIGURATION")
     pull_interval = os.getenv("BURP_API_PULL_INTERVAL")
-    if not pull_interval:
-        PULL_INTERVAL = 30
-    else:
-        PULL_INTERVAL = int(pull_interval)
-    WAIT_STATUS = ("initializing", "crawling", "auditing")
+    PULL_INTERVAL = int(pull_interval) if pull_interval else 30
     host_re = re.compile(r"^https?://.+:\d+$")
     target_re = re.compile(r"^https?://.+")
     if not TARGET_URL:
@@ -145,6 +130,7 @@ def main():
             log(f"WARNING: Discard invalid target: {target}")
     if targets_urls:
         log(f"Scanning {targets_urls} with burp on: {BURP_HOST}")
+        WAIT_STATUS = ("initializing", "crawling", "auditing")
         with tempfile.TemporaryFile() as tmp_file:
             issue_def = f"{BURP_HOST}/{BURP_API_KEY}/v0.1/knowledge_base/issue_definitions"
             rg_issue_definitions = requests.get(issue_def)

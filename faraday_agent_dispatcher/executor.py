@@ -26,7 +26,10 @@ class Executor:
         self.name = name
         self.repo_executor = config.get("repo_executor")
         if self.repo_executor:
-            self.repo_name = re.search(r"(^[a-zA-Z0-9_-]+)(?:\..*)*$", self.repo_executor).group(1)
+            self.repo_name = re.search(
+                r"(^[a-zA-Z0-9_-]+)(?:\..*)*$", self.repo_executor
+            )[1]
+
             metadata = executor_metadata(self.repo_name)
             repo_path = executor_folder() / self.repo_executor
             self.cmd = metadata["cmd"].format(EXECUTOR_FILE_PATH=repo_path)
@@ -46,19 +49,17 @@ class Executor:
             self.__control_dict[option](option, value)
         if Sections.EXECUTOR_PARAMS in config:
             value = config.get(Sections.EXECUTOR_PARAMS)
-            errors = ParamsSchema().validate({"params": value})
-            if errors:
+            if errors := ParamsSchema().validate({"params": value}):
                 raise ValueError(errors)
 
     async def check_cmds(self):
         if self.repo_executor is None:
             return True
-        repo_name = re.search(r"(^[a-zA-Z0-9_-]+)(?:\..*)*$", self.repo_executor).group(1)
+        repo_name = re.search(r"(^[a-zA-Z0-9_-]+)(?:\..*)*$", self.repo_executor)[1]
         metadata = executor_metadata(repo_name)
-        if not await check_commands(metadata):
-            logger.info(
-                f"{Bcolors.WARNING}Invalid bash dependency for " f"{Bcolors.BOLD}{self.repo_name}{Bcolors.ENDC}"
-            )
-            return False
-        else:
+        if await check_commands(metadata):
             return True
+        logger.info(
+            f"{Bcolors.WARNING}Invalid bash dependency for " f"{Bcolors.BOLD}{self.repo_name}{Bcolors.ENDC}"
+        )
+        return False

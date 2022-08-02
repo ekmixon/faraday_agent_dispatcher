@@ -29,7 +29,7 @@ from tests.utils.text_utils import fuzzy_string
 
 class FaradayTestConfig:
     def __init__(self, is_ssl: bool = False, has_base_route: bool = False):
-        self.workspaces = [fuzzy_string(8) for _ in range(0, random.randint(2, 6))]
+        self.workspaces = [fuzzy_string(8) for _ in range(random.randint(2, 6))]
         self.registration_token = f"{random.randint(0, 999999):06}"
         self.agent_token = fuzzy_string(64)
         self.agent_id = random.randint(1, 1000)
@@ -83,13 +83,10 @@ class FaradayTestConfig:
             ssl_context.load_cert_chain(self.ssl_cert_path / "ok.crt", self.ssl_cert_path / "ok.key")
             server_params["ssl"] = ssl_context
         await server.start_server(**server_params)
-        client = TestClient(server, raise_for_status=True)
-        return client
+        return TestClient(server, raise_for_status=True)
 
     def wrap_route(self, route: str):
-        if self.base_route is None:
-            return f"{route}"
-        return f"/{self.base_route}{route}"
+        return f"{route}" if self.base_route is None else f"/{self.base_route}{route}"
 
 
 def get_agent_registration(test_config: FaradayTestConfig):

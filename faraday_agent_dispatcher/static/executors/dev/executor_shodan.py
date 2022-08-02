@@ -22,10 +22,11 @@ def fetch_from_shodan():
     try:
         api = Shodan(SHODAN_API_KEY)
         results = api.host(TARGET)
-        services = []
         vulns = []
-        for port in results["ports"]:
-            services.append({"name": "unknown", "port": port, "protocol": "unknown"})
+        services = [
+            {"name": "unknown", "port": port, "protocol": "unknown"}
+            for port in results["ports"]
+        ]
 
         for cve in results.get("vulns", []):
             cve_data_url = f"https://cve.circl.lu/api/cve/{cve}"
@@ -69,7 +70,7 @@ def fetch_from_shodan():
         print(json.dumps(faraday_info))
 
     except APIError as exception:
-        print("Error: {}".format(exception))
+        print(f"Error: {exception}")
 
 
 if __name__ == "__main__":

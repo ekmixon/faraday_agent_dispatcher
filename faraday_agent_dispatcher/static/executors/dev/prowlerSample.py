@@ -44,17 +44,16 @@ def vuln_parse(json_str: str):
     dic = json.loads(json_str)
     if dic["Status"] == "Pass":
         return None
-    vuln = dict()
-    vuln["name"] = dic["Control"]
-    vuln["desc"] = dic["Message"]
-    vuln["severity"] = level_map[dic["Level"]]
-    vuln["type"] = "Vulnerability"
-    vuln["impact"] = {
-        "accountability": True,
-        "availability": False,
+    return {
+        "name": dic["Control"],
+        "desc": dic["Message"],
+        "severity": level_map[dic["Level"]],
+        "type": "Vulnerability",
+        "impact": {"accountability": True, "availability": False},
+        "policy_violations": [
+            f"{get_check(dic['Control'])}:{dic['Control ID']}"
+        ],
     }
-    vuln["policy_violations"] = [f"{get_check(dic['Control'])}:{dic['Control ID']}"]
-    return vuln
 
 
 REGION = None

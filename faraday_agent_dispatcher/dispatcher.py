@@ -90,24 +90,23 @@ class Dispatcher:
         ssl_ignore = config.instance[Sections.SERVER].get("ssl_ignore", False)
         if not Path(ssl_cert_path).exists():
             raise ValueError(f"SSL cert does not exist in path {ssl_cert_path}")
-        if self.api_ssl_enabled:
-            if ssl_cert_path:
-                ssl_cert_context = ssl.create_default_context(cafile=ssl_cert_path)
-                self.api_kwargs = {"ssl": ssl_cert_context}
-                self.ws_kwargs = {"ssl": ssl_cert_context}
-            else:
-                if ssl_ignore or "HTTPS_PROXY" in os.environ:
-                    ignore_ssl_context = ssl.create_default_context()
-                    ignore_ssl_context.check_hostname = False
-                    ignore_ssl_context.verify_mode = ssl.CERT_NONE
-                    self.api_kwargs = {"ssl": ignore_ssl_context}
-                    self.ws_kwargs = {"ssl": ignore_ssl_context}
-                else:
-                    self.api_kwargs: Dict[str, object] = {}
-                    self.ws_kwargs: Dict[str, object] = {}
-        else:
+        if (
+            self.api_ssl_enabled
+            and not ssl_cert_path
+            and (ssl_ignore or "HTTPS_PROXY" in os.environ)
+        ):
+            ignore_ssl_context = ssl.create_default_context()
+            ignore_ssl_context.check_hostname = False
+            ignore_ssl_context.verify_mode = ssl.CERT_NONE
+            self.api_kwargs = {"ssl": ignore_ssl_context}
+            self.ws_kwargs = {"ssl": ignore_ssl_context}
+        elif self.api_ssl_enabled and not ssl_cert_path or not self.api_ssl_enabled:
             self.api_kwargs: Dict[str, object] = {}
             self.ws_kwargs: Dict[str, object] = {}
+        else:
+            ssl_cert_context = ssl.create_default_context(cafile=ssl_cert_path)
+            self.api_kwargs = {"ssl": ssl_cert_context}
+            self.ws_kwargs = {"ssl": ssl_cert_context}
         self.execution_id = None
         self.executor_tasks: Dict[str, List[Task]] = {
             Dispatcher.TaskLabels.EXECUTOR: [],
@@ -336,11 +335,10 @@ class Dispatcher:
             passed_params = data_dict["args"] if "args" in data_dict else {}
 
             all_accepted = all(
-                [
-                    any([param in passed_param for param in params])  # Control any available param  # was passed
-                    for passed_param in passed_params  # For all passed params
-                ]
+                any(param in passed_param for param in params)
+                for passed_param in passed_params
             )
+
             if not all_accepted:
                 logger.error(f"Unexpected argument passed to {executor.name} executor")
                 await self.websocket.send(
@@ -357,12 +355,11 @@ class Dispatcher:
                     )
                 )
             mandatory_full = all(
-                [
-                    not executor.params[param]["mandatory"]  # All params is not mandatory
-                    or any([param in passed_param for passed_param in passed_params])  # Or was passed
-                    for param in params
-                ]
+                not executor.params[param]["mandatory"]
+                or any(param in passed_param for passed_param in passed_params)
+                for param in params
             )
+
             if not mandatory_full:
                 logger.error("Mandatory argument not passed to {executor.name} executor")
                 await self.websocket.send(
@@ -380,10 +377,11 @@ class Dispatcher:
                 )
 
             # VALIDATE
-            errors = dict()
+            errors = {}
             for param in passed_params:
-                param_errors = type_validate(executor.params[param]["type"], passed_params[param])
-                if param_errors:
+                if param_errors := type_validate(
+                    executor.params[param]["type"], passed_params[param]
+                ):
                     errors[param] = ",".join(param_errors["data"])
                     logger.error(
                         f'Validation error on parameter "{param}", of type "{executor.params[param]["type"]}":'
@@ -412,7 +410,7 @@ class Dispatcher:
                     # The function logs why cant run
                     return
                 running_msg = f"Running {executor.name} executor from " f"{self.agent_name} agent"
-                logger.info("Running {} executor".format(executor.name))
+                logger.info(f"Running {executor.name} executor")
 
                 process = await self.create_process(executor, passed_params)
                 start_date = datetime.utcnow()

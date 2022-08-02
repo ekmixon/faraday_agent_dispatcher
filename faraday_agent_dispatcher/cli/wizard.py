@@ -83,13 +83,12 @@ class Wizard:
                         click.echo(self.status_report(sections=config.instance))
                         config.control_config()
                         end = True
+                    elif confirm_prompt(click.style("File configuration not saved. Are you sure?", fg="yellow")):
+                        click.echo(self.status_report(sections=config.instance.sections()))
+                        end = True
+                        ignore_changes = True
                     else:
-                        if confirm_prompt(click.style("File configuration not saved. Are you sure?", fg="yellow")):
-                            click.echo(self.status_report(sections=config.instance.sections()))
-                            end = True
-                            ignore_changes = True
-                        else:
-                            end = False
+                        end = False
 
                 except ValueError as e:
                     click.secho(f"{e}", fg="red")
@@ -118,7 +117,11 @@ class Wizard:
                 self.delete_executor()
             else:
                 quit_executor_msg = click.style("There are no executors loaded. Are you sure?", fg="yellow")
-                return confirm_prompt(quit_executor_msg, default=False) if not self.executors_dict else True
+                return (
+                    True
+                    if self.executors_dict
+                    else confirm_prompt(quit_executor_msg, default=False)
+                )
 
     def check_executors_name(self, show_text: str, default=None):
         name = click.prompt(show_text, default=default)
@@ -132,11 +135,11 @@ class Wizard:
         return name
 
     async def new_executor(self):
-        name = self.check_executors_name("Name")
-        if name:
+        if name := self.check_executors_name("Name"):
             self.executors_dict[name] = {}
-            custom_executor = confirm_prompt("Is a custom executor?", default=False)
-            if custom_executor:
+            if custom_executor := confirm_prompt(
+                "Is a custom executor?", default=False
+            ):
                 self.new_custom_executor(name)
             else:
                 await self.new_repo_executor(name)
@@ -148,7 +151,13 @@ class Wizard:
             if re.match("(.*_manifest.json|__pycache__)", executor) is None
         ]
 
-        executors_names = list(map(lambda x: re.search(r"(^[a-zA-Z0-9_-]+)(?:\..*)*$", x).group(1), executors))
+        executors_names = list(
+            map(
+                lambda x: re.search(r"(^[a-zA-Z0-9_-]+)(?:\..*)*$", x)[1],
+                executors,
+            )
+        )
+
 
         async def control_base_repo(chosen_option: str) -> Optional[dict]:
             metadata = executor_metadata(chosen_option)
@@ -210,9 +219,8 @@ class Wizard:
             self.executors_dict[new_name] = value
             name = new_name
         section = Sections.EXECUTOR_DATA.format(name)
-        repo_executor = self.executors_dict[section].get("repo_executor")
-        if repo_executor:
-            repo_name = re.search(r"(^[a-zA-Z0-9_-]+)(?:\..*)*$", repo_executor).group(1)
+        if repo_executor := self.executors_dict[section].get("repo_executor"):
+            repo_name = re.search(r"(^[a-zA-Z0-9_-]+)(?:\..*)*$", repo_executor)[1]
             metadata = executor_metadata(repo_name)
             process_repo_var_envs(name, metadata)
         else:

@@ -35,11 +35,10 @@ def main():
                     url_parse = urlparse(url)
                     if is_ip(url_parse.netloc) or is_ip(url_parse.path):
                         print(f"Is {url} not valid.", file=sys.stderr)
+                    elif url_parse.scheme:
+                        f.write(f"{url}\n")
                     else:
-                        if not url_parse.scheme:
-                            f.write(f"http://{url}\n")
-                        else:
-                            f.write(f"{url}\n")
+                        f.write(f"http://{url}\n")
             cmd = [
                 "nuclei",
                 "-l",
@@ -54,10 +53,7 @@ def main():
                 print(f"Is {NUCLEI_TARGET} not valid.", file=sys.stderr)
                 sys.exit()
             else:
-                if not url_parse.scheme:
-                    url = f"http://{NUCLEI_TARGET}"
-                else:
-                    url = f"{NUCLEI_TARGET}"
+                url = f"{NUCLEI_TARGET}" if url_parse.scheme else f"http://{NUCLEI_TARGET}"
                 cmd = [
                     "nuclei",
                     "-target",

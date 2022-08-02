@@ -100,14 +100,14 @@ async def test_start_and_register(
     test_logger_handler,  # noqa F811
 ):
     os.environ["DISPATCHER_TEST"] = "True"
-    if "use_ssl" in register_options:
-        if (register_options["use_ssl"] and not test_config.is_ssl) or (
-            not register_options["use_ssl"] and test_config.is_ssl
-        ):
-            pytest.skip(
-                f"This test should be skipped: server_ssl:{test_config.is_ssl}"
-                f" and config_use_ssl:f {register_options['use_ssl']}"
-            )
+    if "use_ssl" in register_options and (
+        (register_options["use_ssl"] and not test_config.is_ssl)
+        or (not register_options["use_ssl"] and test_config.is_ssl)
+    ):
+        pytest.skip(
+            f"This test should be skipped: server_ssl:{test_config.is_ssl}"
+            f" and config_use_ssl:f {register_options['use_ssl']}"
+        )
 
     client = test_config.client
 
@@ -160,7 +160,7 @@ async def test_start_and_register(
             elif register_options["bad_registration_token"] == "bad format":
                 token = "qewqwe"
             else:  # == "bad"
-                token = test_config.registration_token[0:3]
+                token = test_config.registration_token[:3]
         else:
             token = test_config.registration_token
         with pytest.raises(register_options["expected_exception"]):
@@ -276,13 +276,13 @@ async def test_run_once(
         configuration[Sections.AGENT][Sections.EXECUTORS][ex]["max_size"] = max_size
         executor_metadata = {
             "executor_name": ex,
-            "args": {
-                param: value
-                for param, value in configuration[Sections.AGENT][Sections.EXECUTORS][ex][
+            "args": dict(
+                configuration[Sections.AGENT][Sections.EXECUTORS][ex][
                     Sections.EXECUTOR_PARAMS
                 ].items()
-            },
+            ),
         }
+
         executor_metadata["args"]["out"] = {"mandatory": True, "type": "string", "base": "string"}
         test_config.executors.append(executor_metadata)
 

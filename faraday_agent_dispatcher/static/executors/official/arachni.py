@@ -30,7 +30,7 @@ def main():
     if "EXECUTOR_CONFIG_NAME_URL" in my_envs:
         url_analyze = os.environ.get("EXECUTOR_CONFIG_NAME_URL")
         url = urlparse(url_analyze)
-        if url.scheme != "http" and url.scheme != "https":
+        if url.scheme not in ["http", "https"]:
             url_analyze = f"http://{url_analyze}"
     else:
         print("Param NAME_URL no passed", file=sys.stderr)

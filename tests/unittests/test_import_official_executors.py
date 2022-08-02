@@ -33,9 +33,11 @@ def test_no_path_varenv_in_manifests():
             metadata = executor_metadata(module)
             if not full_check_metadata(metadata):
                 error_message = f"{error_message}Not all manifest keys in " f"manifest for {module}\n"
-            if "environment_variables" in metadata:
-                if "PATH" in metadata["environment_variables"]:
-                    error_message = f"{error_message}Overriding PATH " f"environment variable in {module}\n"
+            if (
+                "environment_variables" in metadata
+                and "PATH" in metadata["environment_variables"]
+            ):
+                error_message = f"{error_message}Overriding PATH " f"environment variable in {module}\n"
 
         except FileNotFoundError:
             error_message = f"{error_message}Can't found manifest file for " f"{module}\n"

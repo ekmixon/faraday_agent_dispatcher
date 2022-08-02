@@ -68,8 +68,7 @@ def control_executors(field_name, value):
     if not isinstance(value, dict):
         raise ValueError(f"{field_name} must be a dictionary")
     for executor in value.values():
-        errors = ExecutorSchema().validate(executor)
-        if errors:
+        if errors := ExecutorSchema().validate(executor):
             raise ValueError(errors)
 
 

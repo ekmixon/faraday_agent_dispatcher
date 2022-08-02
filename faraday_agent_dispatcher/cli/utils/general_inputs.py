@@ -65,22 +65,21 @@ async def choice_paged_option(
             print(f"{Bcolors.OPTIONS}+: Next page{Bcolors.ENDC}")
         print(f"{Bcolors.OPTIONS}Q: Don't choose{Bcolors.ENDC}")
         chosen = click.prompt("Choose one")
-        if chosen not in [str(i) for i in range(1, len(paged_executors) + 1)]:
-            if chosen == "+" and page < max_page - 1:
-                page += 1
-                page_previous += page_size
-                page_next += page_size
-            elif chosen == "-" and page > 0:
-                page -= 1
-                page_previous -= page_size
-                page_next -= page_size
-
-            elif chosen == "Q":
-                raise WizardCanceledOption("Repository executor selection canceled")
-            else:
-                print(f"{Bcolors.WARNING}Invalid option " f"{Bcolors.BOLD}{chosen}{Bcolors.ENDC}")
-        else:
+        if chosen in [str(i) for i in range(1, len(paged_executors) + 1)]:
             chosen = paged_executors[int(chosen) - 1]
             metadata: T = await control_option(chosen)
 
+        elif chosen == "+" and page < max_page - 1:
+            page += 1
+            page_previous += page_size
+            page_next += page_size
+        elif chosen == "-" and page > 0:
+            page -= 1
+            page_previous -= page_size
+            page_next -= page_size
+
+        elif chosen == "Q":
+            raise WizardCanceledOption("Repository executor selection canceled")
+        else:
+            print(f"{Bcolors.WARNING}Invalid option " f"{Bcolors.BOLD}{chosen}{Bcolors.ENDC}")
     return metadata

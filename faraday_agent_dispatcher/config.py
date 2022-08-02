@@ -121,20 +121,7 @@ def update_config_from_ini_to_yaml(filepath: Path):
     except configparser.DuplicateSectionError:
         raise ValueError(f"The config in {filepath} contains duplicated sections", True)
 
-    if OldSections.AGENT not in old_instance:
-        if OldSections.EXECUTOR in old_instance:
-            agent_name = old_instance.get(OldSections.EXECUTOR, "agent_name")
-            executor_name = DEFAULT_EXECUTOR_VERIFY_NAME
-            old_instance.add_section(OldSections.EXECUTOR_DATA.format(executor_name))
-            old_instance.add_section(OldSections.EXECUTOR_VARENVS.format(executor_name))
-            old_instance.add_section(OldSections.EXECUTOR_PARAMS.format(executor_name))
-            old_instance.add_section(OldSections.AGENT)
-            old_instance.set(OldSections.AGENT, "agent_name", agent_name)
-            old_instance.set(OldSections.AGENT, "executors", executor_name)
-            cmd = old_instance.get(OldSections.EXECUTOR, "cmd")
-            old_instance.set(OldSections.EXECUTOR_DATA.format(executor_name), "cmd", cmd)
-            old_instance.remove_section(OldSections.EXECUTOR)
-    else:
+    if OldSections.AGENT in old_instance:
         data = []
 
         if "executors" in old_instance[OldSections.AGENT]:
@@ -149,9 +136,21 @@ def update_config_from_ini_to_yaml(filepath: Path):
         else:
             data.append(f"executors option not in {OldSections.AGENT} section")
 
-        if len(data) > 0:
+        if data:
             raise ValueError("\n".join(data))
 
+    elif OldSections.EXECUTOR in old_instance:
+        agent_name = old_instance.get(OldSections.EXECUTOR, "agent_name")
+        executor_name = DEFAULT_EXECUTOR_VERIFY_NAME
+        old_instance.add_section(OldSections.EXECUTOR_DATA.format(executor_name))
+        old_instance.add_section(OldSections.EXECUTOR_VARENVS.format(executor_name))
+        old_instance.add_section(OldSections.EXECUTOR_PARAMS.format(executor_name))
+        old_instance.add_section(OldSections.AGENT)
+        old_instance.set(OldSections.AGENT, "agent_name", agent_name)
+        old_instance.set(OldSections.AGENT, "executors", executor_name)
+        cmd = old_instance.get(OldSections.EXECUTOR, "cmd")
+        old_instance.set(OldSections.EXECUTOR_DATA.format(executor_name), "cmd", cmd)
+        old_instance.remove_section(OldSections.EXECUTOR)
     if OldSections.TOKENS in old_instance:
         if "registration" in old_instance.options(OldSections.TOKENS):
             old_instance.remove_option(OldSections.TOKENS, "registration")
@@ -314,12 +313,12 @@ __control_dict = {
 def control_config():
     for section in __control_dict:
         for option in __control_dict[section]:
-            if section not in instance:
-                if section == Sections.TOKENS:
-                    continue
-                raise ValueError(f"{section} section missing in config file")
-            else:
+            if section in instance:
                 if option not in instance[section] and section != Sections.TOKENS:
                     raise ValueError(f"{option} option missing in {section} section of the config file")
+            elif section == Sections.TOKENS:
+                continue
+            else:
+                raise ValueError(f"{section} section missing in config file")
             value = instance[section][option] if option in instance[section] else None
             __control_dict[section][option](option, value)

@@ -52,7 +52,7 @@ output_pattern = re.compile(
 if __name__ == "__main__":
     results = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    data = dict()
+    data = {}
     hosts = []
     for result in results.stdout.split("\n\n"):
         if result:
@@ -60,13 +60,13 @@ if __name__ == "__main__":
             if m:
                 # host
                 host_data_ = host_data.copy()
-                host_data_["ip"] = host_data_["ip"].format(m.group("ip"))
-                host_data_["description"] = host_data_["description"].format(m.group("os"))
-                host_data_["hostnames"] = [m.group("hostname")]
+                host_data_["ip"] = host_data_["ip"].format(m["ip"])
+                host_data_["description"] = host_data_["description"].format(m["os"])
+                host_data_["hostnames"] = [m["hostname"]]
 
                 # service
                 service_data_ = service_data.copy()
-                service_data_["version"] = service_data_["version"].format(m.group("version"))
+                service_data_["version"] = service_data_["version"].format(m["version"])
                 host_data_["services"] = [service_data_]
 
                 print(service_data_)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
                 # vuln
                 host_data_["vulnerabilities"] = []
 
-            if m.group("signing") == "False":
+            if m["signing"] == "False":
 
                 vuln_data_ = vuln_data.copy()
                 vuln_data_["name"] = "SMB Signing not required"
@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
                 host_data_["vulnerabilities"].append(vuln_data_)
 
-            if m.group("ms17") == "True":
+            if m["ms17"] == "True":
                 vuln_data_ = vuln_data.copy()
                 vuln_data_["name"] = "MS17-010: Security Update for " "Microsoft Windows SMB Server"
                 vuln_data_["desc"] = (

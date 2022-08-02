@@ -84,8 +84,7 @@ def main():
         )
 
         for _key, val in app_info.items():
-            service_host_data = MATCH_CONNSTRING.match(val)
-            if service_host_data:
+            if service_host_data := MATCH_CONNSTRING.match(val):
                 _service_data = SERVICE_DATA.copy()
 
                 service_name = service_host_data.group(1)
